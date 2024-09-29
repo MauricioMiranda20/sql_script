@@ -1,0 +1,47 @@
+CREATE TABLE PRODUTO(
+ID NUMBER(4) PRIMARY KEY,
+NOME VARCHAR2(120) NOT NULL,
+PRECO NUMBER(6,2) NOT NULL,
+CONSTRAINT UQ_NOME_PRODUTO UNIQUE (NOME)
+);
+INSERT INTO PRODUTO (ID, NOME, PRECO) VALUES (1, 'Caneta', 2.50);
+INSERT INTO PRODUTO (ID, NOME, PRECO) VALUES (2, 'Papel', 12.30);
+INSERT INTO PRODUTO (ID, NOME, PRECO) VALUES (3, 'Borracha', 0.45);
+INSERT INTO PRODUTO (ID, NOME, PRECO) VALUES (4, 'Lápis', 1.50);
+INSERT INTO PRODUTO (ID, NOME, PRECO) VALUES (5, 'Pincel', 6);
+
+CREATE TABLE PESSOA(
+ID NUMBER(4) PRIMARY KEY,
+NOME VARCHAR2(120) NOT NULL,
+CONSTRAINT UQ_NOME_PESSOA UNIQUE (NOME)
+);
+INSERT INTO PESSOA (ID, NOME) VALUES (1, 'João Silva');
+INSERT INTO PESSOA (ID, NOME) VALUES (2, 'Maria Silva');
+INSERT INTO PESSOA (ID, NOME) VALUES (3, 'Claudia Souza');
+INSERT INTO PESSOA (ID, NOME) VALUES (4, 'Jurema Paschoal');
+INSERT INTO PESSOA (ID, NOME) VALUES (5, 'André Paulo');
+
+
+
+
+1
+*Crie um script que crie as SEQUENCEs para as tabelas do enunciado.
+:v
+2
+*Desenvolva um script que cria uma tabela nova chama LOG_PRODUTO que deverá 
+conter: ID, ID_PRODUTO, PRECO_ANTES, PRECO_DEPOIS, DATA_ALTERACAO
+
+OBJ:Criar as devidas referências de PRIMARY KEY e FOREIGN KEY, e SEQUENCE, quando 
+aplicável.
+:v
+3
+*Criar um Trigger que preencha a tabela LOG_PRODUTO toda vez que o valor de um 
+poduto for alterado.
+
+4
+Criar um pacote, chamado PESSOA_ADMIN, que deverá implementar:
+
+*Uma função para incluir uma nova pessoa e retornar o ID da pessoa nova;
+*Uma procedure que exclui uma pessoa;
+*Uma procedure que recebe um ID como parâmetro de entrada e retorna o nome da 
+pessoa como parâmetro de saída.

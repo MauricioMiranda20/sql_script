@@ -1,0 +1,260 @@
+-- Revisão de Programação em Banco de Dados
+--- Bloco Anônimo
+DECLARE
+    v_soma NUMBER := 0;
+    v_dummy dual.dummy%type;
+    r_dual dual%rowtype;
+    v_nome varchar2(20);
+    v_sobrenome varchar2(20);
+BEGIN
+    FOR I IN  1..10
+    LOOP
+        v_soma := v_soma + I;
+    END LOOP;
+    DBMS_OUTPUT.PUT_LINE(v_soma);
+    
+    SELECT DUMMY INTO v_dummy FROM DUAL;
+    DBMS_OUTPUT.PUT_LINE(v_dummy);
+
+    select 'LUCAS' nome, 
+            'MARTINS' sobrenome 
+        INTO
+            v_nome,
+            v_sobrenome
+     from dual;
+    DBMS_OUTPUT.PUT_LINE('Nome do Aluno: ' || v_nome || ' ' || v_sobrenome);
+    
+    select * into r_dual
+    from dual;
+    DBMS_OUTPUT.PUT_LINE(r_dual.dummy);
+END;
+
+--- STORED PROCEDURE
+CREATE OR REPLACE PROCEDURE sp_teste( p_nome varchar2, p_sobrenome varchar2 )
+IS
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Nome do Aluno: ' || p_nome || ' ' || p_sobrenome);
+END;
+
+CREATE OR REPLACE PROCEDURE sp_teste2( p_nome IN OUT varchar2, p_sobrenome OUT varchar2 )
+IS
+BEGIN
+    p_nome := 'Abreu';
+    p_sobrenome := 'Oliveira';
+END;
+/
+declare
+    v_nome varchar2(30) := 'LUCAS';
+    v_sobrenome varchar2(30);
+begin
+    v_sobrenome := 'MARTINS';
+    DBMS_OUTPUT.PUT_LINE('Nome do Aluno: ' || v_nome || ' ' || v_sobrenome);
+    sp_teste2(v_nome, v_sobrenome);
+    DBMS_OUTPUT.PUT_LINE('Nome do Aluno: ' || v_nome || ' ' || v_sobrenome);
+end;
+
+--- FUNCTION
+CREATE OR REPLACE FUNCTION f_teste( p_valor varchar2 )
+RETURN VARCHAR2
+IS
+    v_teste number;
+BEGIN
+    v_teste := 1;
+    return 'QQQ';
+END;
+
+
+create or replace function f_tipo_cliente( limite_credito decimal )
+return varchar2
+is
+    v_tipo_cliente VARCHAR2(30);
+begin
+    IF limite_credito > 50000 THEN
+        v_tipo_cliente := 'BLACK';
+    ELSIF limite_credito >= 10000 THEN
+        v_tipo_cliente := 'SILVER';
+    ELSE
+        v_tipo_cliente := 'GOLD';
+    END IF;
+
+    RETURN v_tipo_cliente;
+END;
+
+CREATE SEQUENCE seq_cliente;
+CREATE TABLE CLIENTE(
+    id number default seq_cliente.nextval,
+    nome varchar2(50),
+    limite decimal(10,2),
+    CONsTRAINT PK_CLIENTE primary key(id)
+    );
+INSERT INTO CLIENTE(nome, limite) VALUES('Abreu Oliveira', 1000);
+INSERT INTO CLIENTE(nome, limite) VALUES('Lucas Martins', 50000);
+INSERT INTO CLIENTE(nome, limite) VALUES('João Victor Martinez', 10000);
+INSERT INTO CLIENTE(nome, limite) VALUES('Fernando Alonso', 1000000);
+INSERT INTO CLIENTE(nome, limite) VALUES('Ted de Abreu', 1000);
+
+SELECT f_tipo_cliente(100000) FROM DUAL;
+
+SELECT c.*, f_tipo_cliente(c.limite) tipo_cliente FROM CLIENTE C;
+
+DECLARE
+    v_tp_cliente VARCHAR2(30);
+BEGIN
+    v_tp_cliente := f_tipo_cliente(10000);
+    DBMS_OUTPUT.PUT_LINE(v_tp_cliente);
+END;
+
+--- TRIGGER
+CREATE OR REPLACE TRIGGER TRG_NOME_CLIENTE
+BEFORE UPDATE
+ON CLIENTE
+FOR EACH ROW
+    WHEN( NEW.NOME IS NOT NULL OR OLD.NOME IS NOT NULL )
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Nome Antigo: ' || :OLD.NOME || ', Nome Novo:' || :NEW.NOME);
+END;
+
+CREATE OR REPLACE TRIGGER TRG_SEM_WHEN
+BEFORE UPDATE
+ON CLIENTE
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('A TRIGGER TRG_SEM_WHEN FOI DISPARADA!');
+END;
+
+select * from cliente;
+
+UPDATE cliente
+SET NOME = NULL;
+WHERE NOME = 'Abreu Oliveira';
+
+UPDATE cliente
+SET NOME = 'Abreu Oliveira'
+WHERE NOME IS NULL;
+/
+--- CURSOR
+DECLARE
+    CURSOR c_cliente IS SELECT nome, limite FROM CLIENTE;
+    -- r_cliente cliente%rowtype;
+    v_nome cliente.nome%type;
+    v_limite cliente.limite%type;
+BEGIN
+    OPEN c_cliente;
+    FETCH c_cliente INTO v_nome, v_limite;
+    while c_cliente%found
+    LOOP
+        -- DBMS_OUTPUT.PUT_LINE('NOME: ' || r_cliente.nome || ', LIMITE: ' || r_cliente.limite);
+        DBMS_OUTPUT.PUT_LINE('NOME: ' || v_nome || ', LIMITE: ' || v_limite);
+        FETCH c_cliente INTO v_nome, v_limite;
+    END LOOP;
+    CLOSE c_cliente;
+END;
+
+DECLARE
+    CURSOR c_cliente IS SELECT nome, limite FROM CLIENTE;
+    -- r_cliente cliente%rowtype;
+    v_nome cliente.nome%type;
+    v_limite cliente.limite%type;
+BEGIN
+    OPEN c_cliente;
+    FETCH c_cliente INTO v_nome, v_limite;
+    -- DBMS_OUTPUT.PUT_LINE('NOME: ' || r_cliente.nome || ', LIMITE: ' || r_cliente.limite);
+    DBMS_OUTPUT.PUT_LINE('NOME: ' || v_nome || ', LIMITE: ' || v_limite);
+
+    FETCH c_cliente INTO v_nome, v_limite;
+    -- DBMS_OUTPUT.PUT_LINE('NOME: ' || r_cliente.nome || ', LIMITE: ' || r_cliente.limite);
+    DBMS_OUTPUT.PUT_LINE('NOME: ' || v_nome || ', LIMITE: ' || v_limite);
+
+    FETCH c_cliente INTO v_nome, v_limite;
+    -- DBMS_OUTPUT.PUT_LINE('NOME: ' || r_cliente.nome || ', LIMITE: ' || r_cliente.limite);
+    DBMS_OUTPUT.PUT_LINE('NOME: ' || v_nome || ', LIMITE: ' || v_limite);
+
+    FETCH c_cliente INTO v_nome, v_limite;
+    -- DBMS_OUTPUT.PUT_LINE('NOME: ' || r_cliente.nome || ', LIMITE: ' || r_cliente.limite);
+    DBMS_OUTPUT.PUT_LINE('NOME: ' || v_nome || ', LIMITE: ' || v_limite);
+
+    FETCH c_cliente INTO v_nome, v_limite;
+    -- DBMS_OUTPUT.PUT_LINE('NOME: ' || r_cliente.nome || ', LIMITE: ' || r_cliente.limite);
+    DBMS_OUTPUT.PUT_LINE('NOME: ' || v_nome || ', LIMITE: ' || v_limite);
+
+    FETCH c_cliente INTO v_nome, v_limite;
+    -- DBMS_OUTPUT.PUT_LINE('NOME: ' || r_cliente.nome || ', LIMITE: ' || r_cliente.limite);
+    DBMS_OUTPUT.PUT_LINE('NOME: ' || v_nome || ', LIMITE: ' || v_limite);
+
+    FETCH c_cliente INTO v_nome, v_limite;
+    -- DBMS_OUTPUT.PUT_LINE('NOME: ' || r_cliente.nome || ', LIMITE: ' || r_cliente.limite);
+    DBMS_OUTPUT.PUT_LINE('NOME: ' || v_nome || ', LIMITE: ' || v_limite);
+
+    FETCH c_cliente INTO v_nome, v_limite;
+    -- DBMS_OUTPUT.PUT_LINE('NOME: ' || r_cliente.nome || ', LIMITE: ' || r_cliente.limite);
+    DBMS_OUTPUT.PUT_LINE('NOME: ' || v_nome || ', LIMITE: ' || v_limite);
+
+    FETCH c_cliente INTO v_nome, v_limite;
+    -- DBMS_OUTPUT.PUT_LINE('NOME: ' || r_cliente.nome || ', LIMITE: ' || r_cliente.limite);
+    DBMS_OUTPUT.PUT_LINE('NOME: ' || v_nome || ', LIMITE: ' || v_limite);
+
+    FETCH c_cliente INTO v_nome, v_limite;
+    -- DBMS_OUTPUT.PUT_LINE('NOME: ' || r_cliente.nome || ', LIMITE: ' || r_cliente.limite);
+    DBMS_OUTPUT.PUT_LINE('NOME: ' || v_nome || ', LIMITE: ' || v_limite);
+
+    FETCH c_cliente INTO v_nome, v_limite;
+    -- DBMS_OUTPUT.PUT_LINE('NOME: ' || r_cliente.nome || ', LIMITE: ' || r_cliente.limite);
+    DBMS_OUTPUT.PUT_LINE('NOME: ' || v_nome || ', LIMITE: ' || v_limite);
+
+    FETCH c_cliente INTO v_nome, v_limite;
+    -- DBMS_OUTPUT.PUT_LINE('NOME: ' || r_cliente.nome || ', LIMITE: ' || r_cliente.limite);
+    DBMS_OUTPUT.PUT_LINE('NOME: ' || v_nome || ', LIMITE: ' || v_limite);
+
+    FETCH c_cliente INTO v_nome, v_limite;
+    -- DBMS_OUTPUT.PUT_LINE('NOME: ' || r_cliente.nome || ', LIMITE: ' || r_cliente.limite);
+    DBMS_OUTPUT.PUT_LINE('NOME: ' || v_nome || ', LIMITE: ' || v_limite);
+
+    FETCH c_cliente INTO v_nome, v_limite;
+    -- DBMS_OUTPUT.PUT_LINE('NOME: ' || r_cliente.nome || ', LIMITE: ' || r_cliente.limite);
+    DBMS_OUTPUT.PUT_LINE('NOME: ' || v_nome || ', LIMITE: ' || v_limite);
+
+    FETCH c_cliente INTO v_nome, v_limite;
+    -- DBMS_OUTPUT.PUT_LINE('NOME: ' || r_cliente.nome || ', LIMITE: ' || r_cliente.limite);
+    DBMS_OUTPUT.PUT_LINE('NOME: ' || v_nome || ', LIMITE: ' || v_limite);
+
+    CLOSE c_cliente;
+END;
+
+--- PACKAGE
+
+CREATE OR REPLACE PACKAGE PKG_CLIENTE AS
+    CURSOR c1;
+    FUNCTION create_cliente( p_nome varchar2, p_limite decimal ) return number;
+    PROCEDURE delete_cliente( p_id_cliente number);
+END;
+/
+CREATE OR REPLACE PACKAGE BODY PKG_CLIENTE AS
+    FUNCTION create_cliente( p_nome varchar2, p_limite decimal ) 
+        return number
+        IS
+            v_id NUMBER;
+        BEGIN
+            INSERT INTO CLIENTE(nome, limite) 
+                VALUES(p_nome, p_limite);
+
+            SELECT SEQ_CLIENTE.CURRVAL
+                INTO v_id
+               FROM DUAL;
+            RETURN v_id;
+        END;
+        
+    PROCEDURE delete_cliente( p_id_cliente number)
+        IS
+        BEGIN
+            DELETE FROM cliente WHERE id = p_id_cliente;
+        END;
+
+END;
+/
+declare
+    v_id number;
+begin
+    v_id := PKG_CLIENTE.create_cliente('WAZOWSKI', 1000000);
+    PKG_CLIENTE.delete_cliente(v_id);
+    DBMS_OUTPUT.PUT_LINE(v_id);
+end;
+SELECT * FROM cliente;
